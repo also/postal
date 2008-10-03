@@ -74,9 +74,10 @@ public abstract class AbstractConnection implements Connection {
 	/** Returns the specified attribute, initializing it with the result of the {@link Callable} if it does not exist.
 	 * This method is thread safe.
 	 */
-	public Object getAttribute(String key, Callable<?> defaultValueCallable) {
+	@SuppressWarnings("unchecked")
+	public <T> T getAttribute(String key, Callable<T> defaultValueCallable) {
 		synchronized (attributes) {
-			Object result = attributes.get(key);
+			T result = (T) attributes.get(key);
 			
 			if (result == null) {
 				try {

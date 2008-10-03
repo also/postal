@@ -26,7 +26,7 @@ public interface Connection extends IdGenerator {
 	/** Returns the specified attribute, initializing it with the result of the {@link Callable} if it does not exist.
 	 * This method is thread safe.
 	 */
-	public Object getAttribute(String key, Callable<?> defaultValueCallable);
+	public <T> T getAttribute(String key, Callable<T> defaultValueCallable);
 
 	/** Returns the time the last message was received, in milliseconds.
 	 */
