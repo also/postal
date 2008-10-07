@@ -19,8 +19,6 @@
 
 package com.ryanberdeen.postal.message;
 
-import com.ryanberdeen.postal.LocalConnection;
-
 /** Superclass for response messages.
  * @author rberdeen
  *
@@ -70,11 +68,5 @@ public abstract class AbstractResponseMessage extends AbstractMessage implements
 	
 	public final String getInResponseTo() {
 		return getHeader(IN_RESPONSE_TO);
-	}
-
-	@Override
-	@Deprecated
-	public final String getStartLine() {
-		return LocalConnection.PROTOCOL + ' ' + getStatus() + ' ' + getReason();
 	}
 }

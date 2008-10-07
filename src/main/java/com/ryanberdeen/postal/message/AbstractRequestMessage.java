@@ -19,8 +19,6 @@
 
 package com.ryanberdeen.postal.message;
 
-import com.ryanberdeen.postal.LocalConnection;
-
 /** Superclass for request messages.
  * @author rberdeen
  *
@@ -62,11 +60,5 @@ public abstract class AbstractRequestMessage extends AbstractMessage implements 
 	
 	public final String getMessageId() {
 		return getHeader(MESSAGE_ID);
-	}
-	
-	@Override
-	@Deprecated
-	public final String getStartLine() {
-		return requestType + ' ' + uri + ' ' + LocalConnection.PROTOCOL_VERSION;
 	}
 }

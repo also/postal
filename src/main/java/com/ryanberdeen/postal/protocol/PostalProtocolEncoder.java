@@ -30,7 +30,10 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
+import com.ryanberdeen.postal.LocalConnection;
 import com.ryanberdeen.postal.message.AbstractMessage;
+import com.ryanberdeen.postal.message.RequestMessage;
+import com.ryanberdeen.postal.message.ResponseMessage;
 
 public class PostalProtocolEncoder implements ProtocolEncoder {
 	private CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
@@ -52,7 +55,16 @@ public class PostalProtocolEncoder implements ProtocolEncoder {
 
 	private void writeHeaders(AbstractMessage message, IoBuffer out, boolean flushHeaders) throws CharacterCodingException {
 		/* send the request or response line */
-		out.putString(message.getStartLine() + CRLF, charsetEncoder);
+		String subject;
+		if (message instanceof RequestMessage) {
+			RequestMessage request = (RequestMessage) message;
+			subject = request.getRequestType() + ' ' + request.getUri() + ' ' + LocalConnection.PROTOCOL_VERSION;
+		}
+		else {
+			ResponseMessage response = (ResponseMessage) message;
+			subject = LocalConnection.PROTOCOL + ' ' + response.getStatus() + ' ' + response.getReason();
+		}
+		out.putString(subject + CRLF, charsetEncoder);
 
 		/* send the headers */
 		for(Map.Entry<String, String> header : message.getHeaders().entrySet()) {

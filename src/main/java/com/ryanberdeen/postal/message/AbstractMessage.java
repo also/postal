@@ -154,7 +154,7 @@ public abstract class AbstractMessage implements Message {
 		}
 	}
 
-	/** Sest the character content of the message, along with the content type.
+	/** Sets the character content of the message, along with the content type.
 	 * @param content
 	 * @param contentType
 	 */
@@ -190,10 +190,4 @@ public abstract class AbstractMessage implements Message {
 		}
 		return false;
 	}
-
-	/** Returns the first line of a message,
-	 * which indicates whether the message is a request or a response.
-	 */
-	@Deprecated
-	public abstract String getStartLine();
 }
