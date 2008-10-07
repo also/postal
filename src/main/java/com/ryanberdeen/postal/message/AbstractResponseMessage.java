@@ -73,7 +73,8 @@ public abstract class AbstractResponseMessage extends AbstractMessage implements
 	}
 
 	@Override
-	protected final String getStartLine() {
-		return LocalConnection.PROTOCOL_VERSION + ' ' + getStatus() + ' ' + getReason();
+	@Deprecated
+	public final String getStartLine() {
+		return LocalConnection.PROTOCOL + ' ' + getStatus() + ' ' + getReason();
 	}
 }

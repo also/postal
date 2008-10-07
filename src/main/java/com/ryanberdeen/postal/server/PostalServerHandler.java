@@ -17,15 +17,28 @@
  * License along with Postal.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ryanberdeen.postal.message;
+package com.ryanberdeen.postal.server;
 
+import org.apache.mina.core.session.IoSession;
+
+import com.ryanberdeen.postal.ConnectionManager;
 import com.ryanberdeen.postal.LocalConnection;
+import com.ryanberdeen.postal.client.PostalClientHandler;
 
-/** A message with incoming headers.
- * This interface simply unifies Message and IncomingHeaders; it does not specify any new operations.
- * @author rberdeen
- *
- */
-public interface IncomingMessage extends Message, IncomingHeaders {
-	public void setLocalConnection(LocalConnection localConnection);
+public class PostalServerHandler extends PostalClientHandler {
+	private ConnectionManager connectionManager;
+
+	public PostalServerHandler(ConnectionManager connectionManager) {
+		this.connectionManager = connectionManager;
+	}
+
+	@Override
+	protected LocalConnection createLocalConnection(IoSession ioSession) {
+		return connectionManager.createConnection(ioSession);
+	}
+
+	@Override
+	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+		super.exceptionCaught(session, cause);
+	}
 }

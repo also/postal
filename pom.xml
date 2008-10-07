@@ -40,5 +40,16 @@ License along with dJava.  If not, see <http://www.gnu.org/licenses/>.
 		</pluginManagement>
 	</build>
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.mina</groupId>
+			<artifactId>mina-core</artifactId>
+			<version>2.0.0-M3</version>
+		</dependency>
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-nop</artifactId>
+		<version>1.5.2</version>
+		<scope>runtime</scope>
+	</dependency>
 	</dependencies>
 </project>

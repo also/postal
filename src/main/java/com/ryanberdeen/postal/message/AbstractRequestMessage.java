@@ -65,7 +65,8 @@ public abstract class AbstractRequestMessage extends AbstractMessage implements 
 	}
 	
 	@Override
-	protected final String getStartLine() {
+	@Deprecated
+	public final String getStartLine() {
 		return requestType + ' ' + uri + ' ' + LocalConnection.PROTOCOL_VERSION;
 	}
 }

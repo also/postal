@@ -19,48 +19,37 @@
 
 package com.ryanberdeen.postal;
 
-import java.io.BufferedOutputStream;
 import java.io.Closeable;
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PushbackInputStream;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.mina.core.session.IoSession;
 
 import com.ryanberdeen.postal.handler.DefaultRequestHandlerMapping;
 import com.ryanberdeen.postal.handler.RequestHandler;
-import com.ryanberdeen.postal.message.AbstractMessage;
 import com.ryanberdeen.postal.message.IncomingMessage;
 import com.ryanberdeen.postal.message.IncomingRequestHeaders;
 import com.ryanberdeen.postal.message.IncomingRequestMessage;
 import com.ryanberdeen.postal.message.IncomingResponseMessage;
-import com.ryanberdeen.postal.message.OutgoingHeaders;
 import com.ryanberdeen.postal.message.OutgoingMessage;
 import com.ryanberdeen.postal.message.OutgoingRequestMessage;
 import com.ryanberdeen.postal.message.OutgoingResponseMessage;
 import com.ryanberdeen.postal.message.RequestMessage;
 
-
 /** A local (not proxied) connection.
  *
  */
-public class LocalConnection extends AbstractConnection implements Closeable, Runnable {
+public class LocalConnection extends AbstractConnection implements Closeable {
 	public static final String PROTOCOL = "P2PR";
 	public static final String VERSION = "0.1";
 	public static final String PROTOCOL_VERSION = PROTOCOL + '/' + VERSION;
 	
-	private Socket socket;
-	
-	private BufferedOutputStream out;
-	private ReentrantLock outLock = new ReentrantLock();
-	private PushbackInputStream in;
+	private IoSession ioSession;
 
 	private DefaultRequestHandlerMapping requestHandlerMapping = new DefaultRequestHandlerMapping();
 	
@@ -71,75 +60,42 @@ public class LocalConnection extends AbstractConnection implements Closeable, Ru
 	
 	boolean running = false;
 	
-	public LocalConnection(Socket socket) throws IOException {
-		init(socket);
+	public LocalConnection(IoSession ioSession) {
+		this.ioSession = ioSession;
 	}
 	
-	public LocalConnection(Socket socket, String connectionId) throws IOException {
+	public LocalConnection(IoSession ioSession, String connectionId) {
 		super(connectionId);
-		init(socket);
-	}
-	
-	private void init(Socket socket) throws IOException {
-		this.socket = socket;
-		
-		out = new BufferedOutputStream(socket.getOutputStream());
-		in = new PushbackInputStream(socket.getInputStream());
+		this.ioSession = ioSession;
 	}
 	
 	public DefaultRequestHandlerMapping getRequestHandlerMapping() {
 		return requestHandlerMapping;
 	}
 	
-	public void start() {
-		new Thread(this).start();
-	}
-	
-	public void run() {
-		running = true;
-		
-		IncomingMessage message = null;
-		
+	public void handleIncomingMessage(IncomingMessage message) {
 		try {
-			for (;;) {
-				try {
-					message = AbstractMessage.read(this, in);
-				}
-				catch (IOException ex) {
-					// TODO the connection was closed
-					throw new RuntimeException("Connection closed", ex);
-				}
-				onRecieve(message);
+			if (message.isRequest()) {
+				RequestHandler requestHandler = requestHandlerMapping.getHandler((IncomingRequestHeaders) message);
 				
-				// a null message should indicate some kind of failure
-				if (message == null) {
-					close();
-					// TODO more stuff
-					return;
-				}
-
-				if (message.isRequest()) {
-					RequestHandler requestHandler = requestHandlerMapping.getHandler((IncomingRequestHeaders) message);
-					
-					if (requestHandler != null) {
-						RequestHandlerRunnable runnable = new RequestHandlerRunnable(requestHandler, (IncomingRequestMessage) message);
-						executorService.execute(runnable);
-					}
-					else {
-						RequestMessage request = (RequestMessage) message;
-						sendResponse(new OutgoingResponseMessage(request, 404, "No handler configured for request (URI: " + request.getUri() + ")"));
-					}
+				if (requestHandler != null) {
+					RequestHandlerRunnable runnable = new RequestHandlerRunnable(requestHandler, (IncomingRequestMessage) message);
+					executorService.execute(runnable);
 				}
 				else {
-					IncomingResponseMessage response = (IncomingResponseMessage) message;
-					ResponseHandlerFutureTask<?> handler = responseHandlers.remove(response.getInResponseTo());
-					if (handler != null) {
-						handler.setResponse(response);
-						executorService.execute(handler);
-					}
-					else {
-						// the response was ignored
-					}
+					RequestMessage request = (RequestMessage) message;
+					sendResponse(new OutgoingResponseMessage(request, 404, "No handler configured for request (URI: " + request.getUri() + ")"));
+				}
+			}
+			else {
+				IncomingResponseMessage response = (IncomingResponseMessage) message;
+				ResponseHandlerFutureTask<?> handler = responseHandlers.remove(response.getInResponseTo());
+				if (handler != null) {
+					handler.setResponse(response);
+					executorService.execute(handler);
+				}
+				else {
+					// the response was ignored
 				}
 			}
 		}
@@ -179,30 +135,12 @@ public class LocalConnection extends AbstractConnection implements Closeable, Ru
 	 * @throws IOException
 	 */
 	private void doSendInternal(OutgoingMessage message) throws IOException {
-		outLock.lock();
-		try {
-			message.write(out);
-			onSend(message);
-		}
-		finally {
-			outLock.unlock();
-		}
+		ioSession.write(message);
+		onSend(message);
 	}
 	
 	public void sendResponse(OutgoingResponseMessage response) throws IOException {
 		doSend(response);
-	}
-	
-	/** Return an output stream for the content of the message.
-	 * The headers are written before the first content is written.
-	 * Content should be written and the stream closed as soon as possible as
-	 * other threads are unable to send messages from the time the first content
-	 * is written to the time the stream is closed. If the number of bytes
-	 * written is different from the declared Content-Length, the client's
-	 * connection will fail or lose messages.
-	 */
-	public OutputStream getOutputStream(OutgoingHeaders message) {
-		return new ConnectionOutputStream(out, message);
 	}
 	
 	private <T extends Throwable> T handle(T t) {
@@ -225,91 +163,11 @@ public class LocalConnection extends AbstractConnection implements Closeable, Ru
 			for (ResponseHandlerFutureTask<?> futureResponseHandler : responseHandlers.values()) {
 				futureResponseHandler.cancel(false);
 			}
-			
-			socket.close();
+			// FIXME mina integration
+			ioSession.close();
 		}
 		finally {
 			onClose();
-		}
-	}
-	
-	private class ConnectionOutputStream extends FilterOutputStream {
-		private OutgoingHeaders headers;
-		private boolean closed = false;
-		
-		private ConnectionOutputStream(OutputStream out, OutgoingHeaders headers) {
-			super(out);
-		}
-
-		@Override
-		public void close() throws IOException {
-			if (outLock.isHeldByCurrentThread()) {
-				// TODO shouldn't always be LF
-				try {
-					out.write('\n');
-					out.flush();
-				}
-				catch (IOException ex) {
-					throw handle(ex);
-				}
-				finally {
-					closed = true;
-					outLock.unlock();
-				}
-			}
-			// TODO else IllegalStateException?
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-			try {
-				onWrite();
-				super.write(b, off, len);
-			}
-			catch (IOException ex) {
-				throw handle(ex);
-			}
-		}
-
-		@Override
-		public void write(byte[] b) throws IOException {
-			try {
-				onWrite();
-				super.write(b);
-			}
-			catch (IOException ex) {
-				throw handle(ex);
-			}
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			try {
-				onWrite();
-				super.write(b);
-			}
-			catch (IOException ex) {
-				throw handle(ex);
-			}
-		}
-		
-		private void onWrite() throws IOException {
-			if (closed) {
-				throw new IllegalStateException("Stream closed");
-			}
-			if (!outLock.isHeldByCurrentThread()) {
-				outLock.lock();
-				if (headers.getContentLength() <= 0) {
-					throw new IllegalStateException("Content length is 0");
-				}
-				
-				try {
-					headers.writeHeaders(out);
-				}
-				catch (IOException ex) {
-					throw handle(ex);
-				}
-			}
 		}
 	}
 	

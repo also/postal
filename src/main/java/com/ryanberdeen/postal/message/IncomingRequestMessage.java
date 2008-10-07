@@ -29,12 +29,17 @@ import com.ryanberdeen.postal.ProxiedConnection;
 public class IncomingRequestMessage extends AbstractRequestMessage implements IncomingRequestHeaders, IncomingMessage {
 	private HashMap<String, Object> attributes = new HashMap<String, Object>();
 	private LocalConnection localConnection;
-	
-	protected IncomingRequestMessage(LocalConnection localConnection, String requestType, String uri) {
+
+	public IncomingRequestMessage(String requestType, String uri) {
+		super(requestType, uri);
+	}
+
+	@Deprecated
+	public IncomingRequestMessage(LocalConnection localConnection, String requestType, String uri) {
 		super(requestType, uri);
 		this.localConnection = localConnection;
 	}
-	
+
 	public final Connection getConnection() {
 		String proxiedConnectionId = getHeader(ProxiedConnection.PROXIED_CONNECTION_ID_HEADER_NAME);
 		if (proxiedConnectionId != null) {
@@ -48,7 +53,11 @@ public class IncomingRequestMessage extends AbstractRequestMessage implements In
 	public final LocalConnection getLocalConnection() {
 		return localConnection;
 	}
-	
+
+	public void setLocalConnection(LocalConnection localConnection) {
+		this.localConnection = localConnection;
+	}
+
 	public Object getAttribute(String name) {
 		return attributes != null ? attributes.get(name) : null;
 	}

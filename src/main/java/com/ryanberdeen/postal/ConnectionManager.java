@@ -19,9 +19,9 @@
 
 package com.ryanberdeen.postal;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.HashMap;
+
+import org.apache.mina.core.session.IoSession;
 
 import com.ryanberdeen.postal.handler.DefaultRequestHandlerMapping;
 
@@ -42,10 +42,10 @@ public class ConnectionManager implements ConnectionLifecycleListener, IdGenerat
 		return requestHandlerMapping;
 	}
 	
-	public LocalConnection createConnection(Socket socket) throws IOException {
+	public LocalConnection createConnection(IoSession ioSession) {
 		LocalConnection connection;
 		synchronized (connections) {
-			connection = new LocalConnection(socket, idSource.generateId());
+			connection = new LocalConnection(ioSession, idSource.generateId());
 		}
 		connection.addConnectionLifecycleListener(this);
 		connection.getRequestHandlerMapping().setParent(requestHandlerMapping);

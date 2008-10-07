@@ -17,15 +17,19 @@
  * License along with Postal.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.ryanberdeen.postal.message;
+package com.ryanberdeen.postal.protocol;
 
-public interface OutgoingMessage extends Message, OutgoingHeaders {
-	/** Set the content as a byte array.
-	 */
-	public void setContent(byte[] content);
-	
-	/** Set the content as a CharSequence.
-	 * If the <code>Content-Type</code> has not been set, it is set to <code>text/plain</code>.
-	 */
-	public void setContent(CharSequence content);
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
+import org.apache.mina.filter.codec.ProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolEncoder;
+
+public class PostalProtocolCodecFactory implements ProtocolCodecFactory {
+	public ProtocolDecoder getDecoder(IoSession session) throws Exception {
+		return new PostalProtocalDecoder();
+	}
+
+	public ProtocolEncoder getEncoder(IoSession session) throws Exception {
+		return new PostalProtocolEncoder();
+	}
 }
