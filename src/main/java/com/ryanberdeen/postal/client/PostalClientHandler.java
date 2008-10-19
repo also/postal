@@ -26,25 +26,19 @@ import com.ryanberdeen.postal.LocalConnection;
 import com.ryanberdeen.postal.message.IncomingMessage;
 
 public class PostalClientHandler extends IoHandlerAdapter {
-	public static final String LOCAL_CONNECTION_KEY = "localConnection";
-
 	@Override
 	public void sessionCreated(IoSession ioSession) throws Exception {
-		ioSession.setAttribute(LOCAL_CONNECTION_KEY, createLocalConnection(ioSession));
+		ioSession.setAttribute(LocalConnection.LOCAL_CONNECTION_KEY, createLocalConnection(ioSession));
 	}
 
 	protected LocalConnection createLocalConnection(IoSession ioSession) {
 		return new LocalConnection(ioSession);
 	}
 
-	public static LocalConnection getLocalConnection(IoSession ioSession) {
-		return (LocalConnection) ioSession.getAttribute(LOCAL_CONNECTION_KEY);
-	}
-
 	@Override
 	public void messageReceived(IoSession ioSession, Object message) throws Exception {
 		IncomingMessage postalMessage = (IncomingMessage) message;
-		LocalConnection localConnection = getLocalConnection(ioSession);
+		LocalConnection localConnection = LocalConnection.getLocalConnection(ioSession);
 		postalMessage.setLocalConnection(localConnection);
 		localConnection.handleIncomingMessage(postalMessage);
 	}

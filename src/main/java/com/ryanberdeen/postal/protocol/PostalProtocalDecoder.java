@@ -19,11 +19,12 @@
 
 package com.ryanberdeen.postal.protocol;
 
+import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.statemachine.DecodingStateProtocolDecoder;
 
 public class PostalProtocalDecoder extends DecodingStateProtocolDecoder {
 
-	public PostalProtocalDecoder() {
+	public PostalProtocalDecoder(IoSession ioSession) {
 		super(new PostalMessageDecodingStateMachine());
 	}
 }

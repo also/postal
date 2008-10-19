@@ -25,11 +25,11 @@ import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 
 public class PostalProtocolCodecFactory implements ProtocolCodecFactory {
-	public ProtocolDecoder getDecoder(IoSession session) throws Exception {
-		return new PostalProtocalDecoder();
+	public ProtocolDecoder getDecoder(IoSession ioSession) throws Exception {
+		return new PostalProtocalDecoder(ioSession);
 	}
 
-	public ProtocolEncoder getEncoder(IoSession session) throws Exception {
+	public ProtocolEncoder getEncoder(IoSession ioSession) throws Exception {
 		return new PostalProtocolEncoder();
 	}
 }

@@ -20,8 +20,8 @@
 package com.ryanberdeen.postal.client;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
-import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoConnector;
 import org.apache.mina.core.session.IoSession;
@@ -34,28 +34,33 @@ import com.ryanberdeen.postal.protocol.PostalProtocolCodecFactory;
 public class PostalClient {
 	private IoConnector ioConnector;
 	private IoSession ioSession;
-	private String host;
-	private int port;
+	private SocketAddress socketAddress;
 	private static final int CONNECT_TIMEOUT = 3000;
 
-	public PostalClient(String host, int port) {
-		this.host = host;
-		this.port = port;
-		ioConnector = new NioSocketConnector();
+	public PostalClient(IoConnector ioConnector, SocketAddress socketAddress) {
+		this.ioConnector = ioConnector;
+		this.socketAddress = socketAddress;
 		ioConnector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new PostalProtocolCodecFactory()));
 		ioConnector.setHandler(new PostalClientHandler());
+
+	}
+
+	/** Creates a new PostalClient that will connect to the specified socket
+	 * address using a {@link NioSocketConnector}.
+	 * @param socketAddress socket address to connect to
+	 */
+	public PostalClient(SocketAddress socketAddress) {
+		this(new NioSocketConnector(), socketAddress);
+	}
+
+	public PostalClient(String host, int port) {
+		this(new InetSocketAddress(host, port));
 	}
 
 	public LocalConnection connect() {
-		ConnectFuture connectFuture = ioConnector.connect(new InetSocketAddress(host, port));
+		ConnectFuture connectFuture = ioConnector.connect(socketAddress);
 		connectFuture.awaitUninterruptibly(CONNECT_TIMEOUT);
-		try {
-			ioSession = connectFuture.getSession();
-			return PostalClientHandler.getLocalConnection(ioSession);
-		}
-		catch (RuntimeIoException e) {
-			e.printStackTrace();
-			throw e;
-		}
+		ioSession = connectFuture.getSession();
+		return LocalConnection.getLocalConnection(ioSession);
 	}
 }

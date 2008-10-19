@@ -48,6 +48,7 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 	public static final String PROTOCOL = "P2PR";
 	public static final String VERSION = "0.1";
 	public static final String PROTOCOL_VERSION = PROTOCOL + '/' + VERSION;
+	public static final String LOCAL_CONNECTION_KEY = "localConnection";
 	
 	private IoSession ioSession;
 
@@ -239,5 +240,9 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 			// TODO handle exceptions
 			return responseHandler.handleResponse(response);
 		}
+	}
+
+	public static LocalConnection getLocalConnection(IoSession ioSession) {
+		return (LocalConnection) ioSession.getAttribute(LOCAL_CONNECTION_KEY);
 	}
 }
