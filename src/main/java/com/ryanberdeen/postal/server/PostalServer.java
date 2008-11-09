@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
@@ -42,7 +41,15 @@ public class PostalServer {
 		ioAcceptor.setHandler(new PostalServerHandler(connectionManager));
 	}
 
-	public void run() throws IOException {
+	/** Starts accepting connections.
+	 */
+	public void start() throws IOException {
 		ioAcceptor.bind(new InetSocketAddress(port));
+	}
+
+	/** Closes all active connections and stops accepting new ones.
+	 */
+	public void stop() {
+		ioAcceptor.unbind();
 	}
 }
