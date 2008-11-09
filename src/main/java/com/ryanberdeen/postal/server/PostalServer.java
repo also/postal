@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 import com.ryanberdeen.postal.ConnectionManager;
@@ -38,17 +37,12 @@ public class PostalServer {
 	public PostalServer(int port, ConnectionManager connectionManager) {
 		this.port = port;
 		ioAcceptor = new NioSocketAcceptor();
-		ioAcceptor.getFilterChain().addLast("logger", new LoggingFilter());
 		ioAcceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new PostalProtocolCodecFactory()));
 
 		ioAcceptor.setHandler(new PostalServerHandler(connectionManager));
-
-		ioAcceptor.getSessionConfig().setReadBufferSize(2048);
-		ioAcceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
 	}
 
 	public void run() throws IOException {
 		ioAcceptor.bind(new InetSocketAddress(port));
-		System.out.println("server is listening at port " + port);
 	}
 }
