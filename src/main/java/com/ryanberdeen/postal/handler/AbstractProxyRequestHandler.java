@@ -97,14 +97,8 @@ public abstract class AbstractProxyRequestHandler implements RequestHandler {
 
 		public void connectionClosed(Connection connection) {
 			targetConnection.setAttribute(PROXIED_CONNECTIONS_ATTRIBUTE_NAME_PREFIX + proxiedConnection.getConnectionId(), null);
-			
-			try {
-				targetConnection.sendRequest(new OutgoingRequestMessage(targetConnection, "/connection/proxied/" + proxiedConnection.getConnectionId() + "/closed"));
-			}
-			catch (IOException ex) {
-				// TODO log
-				// too bad
-			}
+
+			targetConnection.sendRequest(new OutgoingRequestMessage(targetConnection, "/connection/proxied/" + proxiedConnection.getConnectionId() + "/closed"));
 		}
 	}
 	

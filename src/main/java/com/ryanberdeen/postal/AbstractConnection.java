@@ -126,11 +126,11 @@ public abstract class AbstractConnection implements Connection {
 	 * @return
 	 * @throws IOException
 	 */
-	public Future<IncomingResponseMessage> sendRequest(OutgoingRequestMessage request) throws IOException {
+	public Future<IncomingResponseMessage> sendRequest(OutgoingRequestMessage request) {
 		return sendRequest(request, DEFAULT_RESPONSE_HANDLER);
 	}
 	
-	public IncomingResponseMessage sendRequestAndAwaitResponse(OutgoingRequestMessage request) throws IOException, InterruptedException {
+	public IncomingResponseMessage sendRequestAndAwaitResponse(OutgoingRequestMessage request) throws InterruptedException {
 		try {
 			return sendRequest(request).get();
 		}

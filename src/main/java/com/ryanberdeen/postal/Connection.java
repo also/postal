@@ -56,29 +56,23 @@ public interface Connection extends IdGenerator {
 	/** Sends a request whose response will be handled by the caller.
 	 * @param request
 	 * @return a {@link Future} providing access to the response message
-	 * @throws IOException
 	 */
-	public Future<IncomingResponseMessage> sendRequest(
-			OutgoingRequestMessage request) throws IOException;
+	public Future<IncomingResponseMessage> sendRequest(OutgoingRequestMessage request);
 
 	/** Sends a request whose response will be handled by the specified handler.
 	 * @param <V> the result type of the<code>handleResponse</code> method
 	 * @param request the request message to send
 	 * @param responseHandler the response message handler
 	 * @return a {@link Future} allowing access to the result of the response handler
-	 * @throws IOException if an exception occurs while sending the message
 	 */
-	public <V> Future<V> sendRequest(OutgoingRequestMessage request,
-			ResponseHandler<V> responseHandler) throws IOException;
+	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler);
 
 	public IncomingResponseMessage sendRequestAndAwaitResponse(
 			OutgoingRequestMessage request) throws IOException,
 			InterruptedException;
 
-	/** Sends a response message. The connection will be closed if any exceptions occur.
-	 * @throws IOException if an exception occurrs while sending the message
+	/** Sends a response message.
 	 */
-	public void sendResponse(OutgoingResponseMessage response)
-			throws IOException;
+	public void sendResponse(OutgoingResponseMessage response);
 
 }

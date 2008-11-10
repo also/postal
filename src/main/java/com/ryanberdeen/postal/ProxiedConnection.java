@@ -19,7 +19,6 @@
 
 package com.ryanberdeen.postal;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -28,7 +27,6 @@ import com.ryanberdeen.postal.message.IncomingRequestMessage;
 import com.ryanberdeen.postal.message.OutgoingMessage;
 import com.ryanberdeen.postal.message.OutgoingRequestMessage;
 import com.ryanberdeen.postal.message.OutgoingResponseMessage;
-
 
 public class ProxiedConnection extends AbstractConnection {
 	public static final String TARGET_CONNECTION_ID_HEADER_NAME = "Target-Connection-Id";
@@ -53,13 +51,13 @@ public class ProxiedConnection extends AbstractConnection {
 		return result;
 	}
 
-	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler) throws IOException {
+	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler) {
 		setHeaders(request);
 		onSend(request);
 		return localConnection.sendRequest(request, responseHandler);
 	}
 
-	public void sendResponse(OutgoingResponseMessage response) throws IOException {
+	public void sendResponse(OutgoingResponseMessage response) {
 		setHeaders(response);
 		onSend(response);
 		localConnection.sendResponse(response);

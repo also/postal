@@ -20,7 +20,6 @@
 package com.ryanberdeen.postal;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -109,54 +108,39 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 	/** Sends a request whose response will be handled by the specified handler.
 	 * @param <V> the result type of the<code>handleResponse</code> method
 	 * @param request the request message to send
-	 * @param responseHandler the response message handler
-	 * @return a {@link Future} allowing access to the result of the response handler
-	 * @throws IOException if an exception occurs while sending the message
+	 * @param responseHandler the response message handler, <code>null</code> to ignore response
+	 * @return a {@link Future} allowing access to the result of the response handler, <code>null</code> if response will be ignored
 	 */
-	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler) throws IOException {
-		ResponseHandlerFutureTask<V> future = new ResponseHandlerFutureTask<V>(responseHandler);
-		responseHandlers.put(request.getMessageId(), future);
+	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler) {
+		ResponseHandlerFutureTask<V> future = null;
+		if (responseHandler != null) {
+			future = new ResponseHandlerFutureTask<V>(responseHandler);
+			responseHandlers.put(request.getMessageId(), future);
+		}
 		doSend(request);
 		return future;
 	}
 	
-	/** Sends the message, closing the connection if an exception is thrown.
+	/** Sends the message.
 	 */
-	private void doSend(OutgoingMessage message) throws IOException {
-		try {
-			doSendInternal(message);
-		}
-		catch (IOException ex) {
-			throw handle(ex);
-		}
-	}
-	
-	/** Sends the message, ignoring exceptions.
-	 * @param message
-	 * @throws IOException
-	 */
-	private void doSendInternal(OutgoingMessage message) throws IOException {
+	private void doSend(OutgoingMessage message) {
 		ioSession.write(message);
 		onSend(message);
 	}
 	
-	public void sendResponse(OutgoingResponseMessage response) throws IOException {
+	public void sendResponse(OutgoingResponseMessage response) {
 		doSend(response);
 	}
 	
 	private <T extends Throwable> T handle(T t) {
+		// TODO
 		t.printStackTrace();
-		try {
-			close();
-		}
-		catch (IOException ex) {
-			// TODO log
-		}
-		
+		close();
+
 		return t;
 	}
 	
-	public void close() throws IOException {
+	public void close() {
 		running = false;
 		
 		// TODO
@@ -164,7 +148,6 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 			for (ResponseHandlerFutureTask<?> futureResponseHandler : responseHandlers.values()) {
 				futureResponseHandler.cancel(false);
 			}
-			// FIXME mina integration
 			ioSession.close();
 		}
 		finally {
@@ -186,28 +169,21 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 		}
 		
 		public void run() {
+			OutgoingResponseMessage response = null;
 			try {
-				OutgoingResponseMessage response = null;
-				try {
-					response = requestHandler.handleRequest(request);
-				}
-				catch (Throwable t) {
-					// TODO log
-					t.printStackTrace();
-					/* send a response indicating server error */
-					// TODO send more information about failure
-					response = new OutgoingResponseMessage(request, 500);
-					response.setContent(t.getMessage());
-				}
-				if (response != null) {
-					doSend(response);
-				}
+				response = requestHandler.handleRequest(request);
 			}
-			catch (IOException ex) {
-				// exception handled by doSend
-				// TODO connection exception handling is confusing
+			catch (Throwable t) {
+				// TODO log
+				t.printStackTrace();
+				/* send a response indicating server error */
+				// TODO send more information about failure
+				response = new OutgoingResponseMessage(request, 500);
+				response.setContent(t.getMessage());
 			}
-			
+			if (response != null) {
+				doSend(response);
+			}
 		}
 	}
 	
