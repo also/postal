@@ -59,6 +59,10 @@ public interface Connection extends IdGenerator {
 	 */
 	public Future<IncomingResponseMessage> sendRequest(OutgoingRequestMessage request);
 
+	/** Sends a request, ignoring any response.
+	 */
+	public void sendRequestAndIgnoreResponse(OutgoingRequestMessage request);
+
 	/** Sends a request whose response will be handled by the specified handler.
 	 * @param <V> the result type of the<code>handleResponse</code> method
 	 * @param request the request message to send

@@ -129,6 +129,10 @@ public abstract class AbstractConnection implements Connection {
 	public Future<IncomingResponseMessage> sendRequest(OutgoingRequestMessage request) {
 		return sendRequest(request, DEFAULT_RESPONSE_HANDLER);
 	}
+
+	public void sendRequestAndIgnoreResponse(OutgoingRequestMessage request) {
+		sendRequest(request, null);
+	}
 	
 	public IncomingResponseMessage sendRequestAndAwaitResponse(OutgoingRequestMessage request) throws InterruptedException {
 		try {
