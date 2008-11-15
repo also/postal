@@ -19,27 +19,13 @@
 
 package com.ryanberdeen.postal.client;
 
-import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 
+import com.ryanberdeen.postal.AbstractPostalIoHandler;
 import com.ryanberdeen.postal.LocalConnection;
-import com.ryanberdeen.postal.message.IncomingMessage;
 
-public class PostalClientHandler extends IoHandlerAdapter {
-	@Override
-	public void sessionCreated(IoSession ioSession) throws Exception {
-		ioSession.setAttribute(LocalConnection.LOCAL_CONNECTION_KEY, createLocalConnection(ioSession));
-	}
-
+public class PostalClientHandler extends AbstractPostalIoHandler {
 	protected LocalConnection createLocalConnection(IoSession ioSession) {
 		return new LocalConnection(ioSession);
-	}
-
-	@Override
-	public void messageReceived(IoSession ioSession, Object message) throws Exception {
-		IncomingMessage postalMessage = (IncomingMessage) message;
-		LocalConnection localConnection = LocalConnection.getLocalConnection(ioSession);
-		postalMessage.setLocalConnection(localConnection);
-		localConnection.handleIncomingMessage(postalMessage);
 	}
 }

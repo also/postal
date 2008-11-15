@@ -31,8 +31,7 @@ import com.ryanberdeen.postal.message.IncomingResponseMessage;
 import com.ryanberdeen.postal.message.OutgoingMessage;
 import com.ryanberdeen.postal.message.OutgoingRequestMessage;
 
-
-public abstract class AbstractConnection implements Connection {
+abstract class AbstractConnection implements Connection {
 	private String connectionId;
 
 	private long lastMessageRecievedTime = -1;

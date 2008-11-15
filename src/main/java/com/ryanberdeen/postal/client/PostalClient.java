@@ -42,7 +42,6 @@ public class PostalClient {
 		this.socketAddress = socketAddress;
 		ioConnector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new PostalProtocolCodecFactory()));
 		ioConnector.setHandler(new PostalClientHandler());
-
 	}
 
 	/** Creates a new PostalClient that will connect to the specified socket

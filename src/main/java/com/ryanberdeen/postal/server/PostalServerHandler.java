@@ -21,11 +21,11 @@ package com.ryanberdeen.postal.server;
 
 import org.apache.mina.core.session.IoSession;
 
+import com.ryanberdeen.postal.AbstractPostalIoHandler;
 import com.ryanberdeen.postal.ConnectionManager;
 import com.ryanberdeen.postal.LocalConnection;
-import com.ryanberdeen.postal.client.PostalClientHandler;
 
-public class PostalServerHandler extends PostalClientHandler {
+public class PostalServerHandler extends AbstractPostalIoHandler {
 	private ConnectionManager connectionManager;
 
 	public PostalServerHandler(ConnectionManager connectionManager) {
