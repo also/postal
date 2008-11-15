@@ -63,4 +63,8 @@ public class PostalClient {
 		ioSession = connectFuture.getSession();
 		return LocalConnection.getLocalConnection(ioSession);
 	}
+
+	public void stop() {
+		ioConnector.dispose();
+	}
 }

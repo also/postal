@@ -19,7 +19,6 @@
 
 package com.ryanberdeen.postal;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -35,7 +34,7 @@ public interface Connection extends IdGenerator {
 	 */
 	public void addConnectionLifecycleListener(ConnectionLifecycleListener connectionLifecycleListener);
 	// TODO needs removeConnectionLifecycleListener
-	
+
 	public void setAttribute(String key, Object value);
 
 	public Object getAttribute(String key);
@@ -71,9 +70,9 @@ public interface Connection extends IdGenerator {
 	 */
 	public <V> Future<V> sendRequest(OutgoingRequestMessage request, ResponseHandler<V> responseHandler);
 
-	public IncomingResponseMessage sendRequestAndAwaitResponse(
-			OutgoingRequestMessage request) throws IOException,
-			InterruptedException;
+	public IncomingResponseMessage sendRequestAndAwaitResponse(OutgoingRequestMessage request) throws InterruptedException;
+
+	public IncomingResponseMessage sendRequestAndAwaitResponseUninterruptibly(OutgoingRequestMessage request);
 
 	/** Sends a response message.
 	 */
