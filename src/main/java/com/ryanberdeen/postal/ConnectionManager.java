@@ -45,7 +45,7 @@ public class ConnectionManager implements ConnectionLifecycleListener, IdGenerat
 	public LocalConnection createConnection(IoSession ioSession) {
 		LocalConnection connection;
 		synchronized (connections) {
-			connection = new LocalConnection(ioSession, idSource.generateId());
+			connection = new IncomingConnection(ioSession, idSource.generateId());
 		}
 		connection.addConnectionLifecycleListener(this);
 		connection.getRequestHandlerMapping().setParent(requestHandlerMapping);

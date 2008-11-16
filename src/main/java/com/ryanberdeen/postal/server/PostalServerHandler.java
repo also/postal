@@ -23,7 +23,6 @@ import org.apache.mina.core.session.IoSession;
 
 import com.ryanberdeen.postal.AbstractPostalIoHandler;
 import com.ryanberdeen.postal.ConnectionManager;
-import com.ryanberdeen.postal.LocalConnection;
 
 public class PostalServerHandler extends AbstractPostalIoHandler {
 	private ConnectionManager connectionManager;
@@ -33,8 +32,8 @@ public class PostalServerHandler extends AbstractPostalIoHandler {
 	}
 
 	@Override
-	protected LocalConnection createLocalConnection(IoSession ioSession) {
-		return connectionManager.createConnection(ioSession);
+	public void sessionCreated(IoSession ioSession) throws Exception {
+		connectionManager.createConnection(ioSession);
 	}
 
 	@Override

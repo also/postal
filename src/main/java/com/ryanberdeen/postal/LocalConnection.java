@@ -43,7 +43,7 @@ import com.ryanberdeen.postal.message.RequestMessage;
 /** A local (not proxied) connection.
  *
  */
-public class LocalConnection extends AbstractConnection implements Closeable {
+public abstract class LocalConnection extends AbstractConnection implements Closeable {
 	public static final String PROTOCOL = "P2PR";
 	public static final String VERSION = "0.1";
 	public static final String PROTOCOL_VERSION = PROTOCOL + '/' + VERSION;
@@ -58,15 +58,15 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 	
 	private HashMap<String, ResponseHandlerFutureTask<?>> responseHandlers = new HashMap<String, ResponseHandlerFutureTask<?>>();
 	
-	boolean running = false;
+	protected LocalConnection() {}
 	
-	public LocalConnection(IoSession ioSession) {
-		this.ioSession = ioSession;
+	public LocalConnection(String connectionId) {
+		super(connectionId);
 	}
 	
-	public LocalConnection(IoSession ioSession, String connectionId) {
-		super(connectionId);
+	protected void connected(IoSession ioSession) {
 		this.ioSession = ioSession;
+		ioSession.setAttribute(LocalConnection.LOCAL_CONNECTION_KEY, this);
 	}
 	
 	public DefaultRequestHandlerMapping getRequestHandlerMapping() {
@@ -141,8 +141,6 @@ public class LocalConnection extends AbstractConnection implements Closeable {
 	}
 	
 	public void close() {
-		running = false;
-		
 		// TODO
 		try {
 			for (ResponseHandlerFutureTask<?> futureResponseHandler : responseHandlers.values()) {

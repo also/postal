@@ -22,45 +22,37 @@ package com.ryanberdeen.postal.client;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoConnector;
-import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 import com.ryanberdeen.postal.LocalConnection;
+import com.ryanberdeen.postal.OutgoingConnection;
 import com.ryanberdeen.postal.protocol.PostalProtocolCodecFactory;
 
 public class PostalClient {
 	private IoConnector ioConnector;
-	private IoSession ioSession;
-	private SocketAddress socketAddress;
-	private static final int CONNECT_TIMEOUT = 3000;
 
-	public PostalClient(IoConnector ioConnector, SocketAddress socketAddress) {
+	public PostalClient(IoConnector ioConnector) {
 		this.ioConnector = ioConnector;
-		this.socketAddress = socketAddress;
 		ioConnector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new PostalProtocolCodecFactory()));
 		ioConnector.setHandler(new PostalClientHandler());
 	}
 
-	/** Creates a new PostalClient that will connect to the specified socket
-	 * address using a {@link NioSocketConnector}.
-	 * @param socketAddress socket address to connect to
+	/** Creates a new PostalClient using a {@link NioSocketConnector}.
 	 */
-	public PostalClient(SocketAddress socketAddress) {
-		this(new NioSocketConnector(), socketAddress);
+	public PostalClient() {
+		this(new NioSocketConnector());
 	}
 
-	public PostalClient(String host, int port) {
-		this(new InetSocketAddress(host, port));
+	public LocalConnection connect(String hostname, int port) {
+		return connect(new InetSocketAddress(hostname, port));
 	}
 
-	public LocalConnection connect() {
-		ConnectFuture connectFuture = ioConnector.connect(socketAddress);
-		connectFuture.awaitUninterruptibly(CONNECT_TIMEOUT);
-		ioSession = connectFuture.getSession();
-		return LocalConnection.getLocalConnection(ioSession);
+	public LocalConnection connect(SocketAddress socketAddress) {
+		OutgoingConnection connection = new OutgoingConnection(ioConnector, socketAddress);
+		connection.connect();
+		return connection;
 	}
 
 	public void stop() {

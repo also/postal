@@ -19,13 +19,7 @@
 
 package com.ryanberdeen.postal.client;
 
-import org.apache.mina.core.session.IoSession;
-
 import com.ryanberdeen.postal.AbstractPostalIoHandler;
-import com.ryanberdeen.postal.LocalConnection;
 
 public class PostalClientHandler extends AbstractPostalIoHandler {
-	protected LocalConnection createLocalConnection(IoSession ioSession) {
-		return new LocalConnection(ioSession);
-	}
 }
