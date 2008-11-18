@@ -51,5 +51,6 @@ public class PostalServer {
 	 */
 	public void stop() {
 		ioAcceptor.unbind();
+		ioAcceptor.dispose();
 	}
 }
